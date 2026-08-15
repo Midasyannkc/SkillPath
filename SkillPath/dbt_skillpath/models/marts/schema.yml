@@ -1,0 +1,61 @@
+version: 2
+
+models:
+  - name: fct_employee_skill_coverage
+    description: >
+      One row per (employee, skill) with completion status, best quiz score,
+      and fastest completion time. Canonical table for skill-gap reporting
+      and the input to the skill-gap completion propensity model.
+    tests:
+      # Composite uniqueness on (employee_id, skill) is the test that
+      # actually catches a Silver/staging regression: if the de-duplication
+      # logic in stg_completions ever breaks, this fails loudly here
+      # instead of quietly inflating a completion count on a dashboard.
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - employee_id
+            - skill
+    columns:
+      - name: employee_id
+        tests:
+          - not_null
+      - name: skill
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - python_programming
+                - sql_fundamentals
+                - cloud_architecture
+                - data_modeling
+                - leadership_101
+                - negotiation
+                - public_speaking
+                - project_management
+                - excel_advanced
+                - security_awareness
+                - customer_empathy
+                - financial_analysis
+      - name: skill_completed
+        tests:
+          - not_null
+          - accepted_values:
+              values: [0, 1]
+      - name: best_quiz_score
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 100
+              inclusive: true
+
+  - name: rpt_department_training_summary
+    description: Department-level rollup of training engagement, used in manager-facing reporting.
+    columns:
+      - name: department
+        tests:
+          - not_null
+          - unique
+      - name: employees_engaged
+        tests:
+          - not_null
+

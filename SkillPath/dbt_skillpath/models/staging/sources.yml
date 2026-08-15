@@ -1,0 +1,27 @@
+version: 2
+
+sources:
+  - name: bronze
+    description: Raw LMS and HRIS extracts, loaded as-is from vendor CSVs.
+    schema: bronze
+    tables:
+      - name: hris_employees
+        description: One row per employee from the HRIS export.
+        columns:
+          - name: employee_id
+            tests:
+              - not_null
+              - unique
+      - name: course_catalog
+        description: One row per course, mapped to a target skill.
+        columns:
+          - name: course_id
+            tests:
+              - not_null
+              - unique
+      - name: lms_completions
+        description: One row per enrollment event from the LMS.
+        columns:
+          - name: event_id
+            tests:
+              - not_null
